@@ -1,24 +1,43 @@
-import java.util.Arrays;
-import java.util.Scanner;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Scanner;
 
-public class ProyectoNorkys {
-    String[] usuarios = new String[4];
-    String[] productos = {"1.-norkys brasa", "2.-norkys burguer", "3.-norkys parrilla", "4.-bebidas"};
-    double[] precios = {30.00, 19.00, 35.00, 10.00};
-    double igv = 0.18;
-    double total, totalDelSubtotal, totalDeIgv;
-    double[] totalPagarProductos = new double[productos.length];
-    double[] subtotalIgvProductos = new double[productos.length];
-    double[] subtotalProductos = new double[productos.length];
-    int respuesta, opcion;
-    boolean sesionIniciada = false;
+public class Proyectonorkys {
+    public Scanner scanner = new Scanner(System.in);
+    public String[] usuarios = new String[4];
+    public boolean sesionIniciada = false;
 
-    Scanner scanner = new Scanner(System.in);
+    public double igv = 0.18;
 
-    public String iniciarSesion() {
+    public double[] subtotalProductos = new double[4];
+    public double[] subtotalIgvProductos = new double[4];
+    public double[] totalPagarProductos = new double[4];
+
+    public String niciarSesionExistente( ) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("¿Qué desea hacer?");
+        System.out.println("1.- Iniciar sesión");
+        System.out.println("2.- Crear cuenta");
+        System.out.println("3.- Iniciar como invitado");
+        System.out.print("Seleccione una opción (1/2/3): ");
+        int opcion = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (opcion) {
+            case 1:
+                return iniciarSesionExistente();
+            case 2:
+                crearCuenta();
+                return "Cuenta creada exitosamente. Por favor inicie sesión.";
+            case 3:
+                return "Bienvenido, ha ingresado como invitado.";
+            default:
+                return "Opción no válida";
+        }
+    }
+
+    public String iniciarSesionExistente() {
         System.out.print("Ingrese correo: ");
         String correo = scanner.nextLine();
         System.out.print("Ingrese su contraseña: ");
@@ -28,10 +47,20 @@ public class ProyectoNorkys {
             sesionIniciada = true;
             this.usuario();
             this.menu();
-            return "Inicio de sesión exitoso. ¡Bienvenido a norkys!";
+            return "Inicio de sesión exitoso. ¡Bienvenido a Norkys!";
         } else {
-            return "Inicio de sesión fallido. Verifique sus credenciales.";
+            return "Inicio de sesión fallido. Verifique sus datos.";
         }
+    }
+
+    public void crearCuenta() {
+        System.out.print("Ingrese correo para su cuenta: ");
+        String correo = scanner.nextLine();
+        System.out.print("Ingrese una contraseña: ");
+        String contrasena = scanner.nextLine();
+
+
+        System.out.println("Cuenta creada exitosamente.");
     }
 
     public void usuario() {
@@ -45,93 +74,21 @@ public class ProyectoNorkys {
         usuarios[3] = scanner.nextLine();
     }
 
-    public void productos() {
-        for (int i = 0; i < productos.length; i++) {
-            System.out.println(productos[i] + " ----------> precio:S/." + precios[i]);
-        }
-        System.out.print("Seleccione la opción: ");
-        int opcionProducto = scanner.nextInt();
-        System.out.print("Ingrese la cantidad que desea del producto: ");
-        int cantidadProducto = scanner.nextInt();
-        scanner.nextLine();
-
-        if (opcionProducto >= 1 && opcionProducto <= productos.length) {
-            int index = opcionProducto - 1;
-            subtotalProductos[index] += cantidadProducto * precios[index];
-            subtotalIgvProductos[index] += subtotalProductos[index] * igv;
-            totalPagarProductos[index] = subtotalProductos[index] + subtotalIgvProductos[index];
-
-            System.out.println("Eligió " + cantidadProducto + " " + productos[index] + " el total es de: S/." + totalPagarProductos[index]);
-            System.out.println("------ELIJA UNA DE LAS SIGUIENTES OPCIONES------");
-            System.out.println("Opción 1: Seguir comprando productos");
-            System.out.println("Opción 2: Pagar");
-            respuesta = scanner.nextInt();
-            scanner.nextLine();
-            switch (respuesta) {
-                case 1:
-                    this.productos();
-                    break;
-                case 2:
-                    this.pagoProductos();
-                    break;
-                default:
-                    System.out.println("Opción inválida, regresando al menú principal.");
-                    break;
-            }
-        } else {
-            System.out.println("Opción inválida");
-            System.out.println("Redirigiendo al menú principal");
-        }
-    }
-
-    public void pagoProductos() {
-        total = Arrays.stream(totalPagarProductos).sum();
-        totalDelSubtotal = Arrays.stream(subtotalProductos).sum();
-        totalDeIgv = Arrays.stream(subtotalIgvProductos).sum();
-
-        try {
-            File archivo = new File("boleta_norkys.txt");
-            FileWriter escritor = new FileWriter(archivo);
-
-            escritor.write("----BOLETA DE VENTA---------\n");
-
-            for (int i = 0; i < productos.length; i++) {
-                if (subtotalProductos[i] > 0) {
-                    escritor.write(productos[i] + " - Cantidad: " + (subtotalProductos[i] / precios[i]) +
-                            " - Subtotal: S/." + subtotalProductos[i] + " - IGV: S/." + subtotalIgvProductos[i] +
-                            " - Total: S/." + totalPagarProductos[i] + "\n");
-                }
-            }
-
-            escritor.write(" SUBTOTAL :S/." + totalDelSubtotal + "\n");
-            escritor.write(" IGV :S/." + totalDeIgv + "\n");
-            escritor.write(" TOTAL :S/." + total + "\n");
-
-            escritor.write("-----------Gracias por su compra! Vuelva pronto.------------\n");
-
-            escritor.close();
-            sesionIniciada = false;
-            System.out.println("Sesión terminada. Gracias por visitarnos, vuelva pronto.");
-        } catch (IOException e) {
-            System.out.println("Error al exportar la factura.");
-            e.printStackTrace();
-        }
-    }
-
     public void menu() {
         if (sesionIniciada) {
             boolean opciones = true;
             while (opciones) {
-                System.out.println("Elija una de las siguientes opciones ");
-                System.out.println("1.-Productos");
-                System.out.println("2.-Atención al cliente");
-                System.out.println("3.-Salir");
+                System.out.println("Elija una de las siguientes opciones (1/2/3): ");
+                System.out.println("1.- Carta de productos");
+                System.out.println("2.- Atención al cliente");
+                System.out.println("3.- Salir");
                 System.out.print("Seleccione una opción: ");
-                opcion = scanner.nextInt();
+                int opcion = scanner.nextInt();
                 scanner.nextLine();
+
                 switch (opcion) {
                     case 1:
-                        this.productos();
+                        this.mostrarCartaProductos();
                         break;
                     case 2:
                         this.contactar();
@@ -148,69 +105,217 @@ public class ProyectoNorkys {
         }
     }
 
-    public void contactar() {
-        System.out.println("---------------Atención al cliente-----------------");
-        System.out.println("Hola " + usuarios[0] + ", elija una de las siguientes opciones:");
-        System.out.println("1.-Crear cuenta");
-        System.out.println("2.-Número para pedidos");
-        System.out.println("3.-Quejas");
-        int atencionCliente = scanner.nextInt();
+    public void mostrarCartaProductos() {
+        System.out.println("----- Carta de Productos -----");
+        System.out.println("1. Combos de Pollo a la Brasa");
+        System.out.println("2. Combos de Burger");
+        System.out.println("3. Combos de Parrilla");
+        System.out.println("4. Bebidas");
+        System.out.print("Seleccione una categoría (1/2/3/4): ");
+        int opcion = scanner.nextInt();
         scanner.nextLine();
-        switch (atencionCliente) {
+
+        switch (opcion) {
             case 1:
-                this.crearCuenta();
+                this.elegirComboPolloBrasa();
                 break;
             case 2:
-                System.out.println("Nuestro número para pedidos es: (01)505-2222");
-                System.out.println("Regresando al menú principal");
-                this.menu();
+                this.elegirComboBurger();
                 break;
             case 3:
-                System.out.println("Realice su queja; eso nos ayudará a mejorar como empresa");
-                this.quejas();
+                this.elegirComboParrilla();
+                break;
+            case 4:
+                this.elegirBebida();
                 break;
             default:
-                System.out.println("Opción inválida, regresando al menú principal.");
+                System.out.println("Opción no válida");
                 break;
         }
     }
 
-    public void crearCuenta() {
-        System.out.println("-----------Crear cuenta-----------");
-        System.out.print("Ingrese su nombre: ");
-        usuarios[0] = scanner.nextLine();
-        System.out.print("Ingrese su apellido: ");
-        usuarios[1] = scanner.nextLine();
-        System.out.print("Ingrese su número de teléfono: ");
-        usuarios[2] = scanner.nextLine();
-        System.out.print("Ingrese su DNI: ");
-        usuarios[3] = scanner.nextLine();
-        System.out.println("-----------Se registró satisfactoriamente-----------");
-        System.out.println("Redirigiendo al menú principal");
-        this.menu();
+    public void elegirComboPolloBrasa() {
+        double[] preciosCombos = {0.00, 30.00, 50.00, 80.00};
+
+        System.out.println("Combos disponibles de pollo a la brasa:");
+        System.out.println("1. 1/4 de pollo + papas + ensalada - S/ 30.00");
+        System.out.println("2. 1/2 de pollo + papas + ensalada - S/ 50.00");
+        System.out.println("3. 1 pollo + papas + ensalada - S/ 80.00");
+        System.out.print("Seleccione su pedido (1/2/3): ");
+        int tipoComboBrasa = scanner.nextInt();
+
+        if (tipoComboBrasa < 1 || tipoComboBrasa > 3) {
+            System.out.println("Opción de combo no válida");
+            return;
+        }
+
+        System.out.print("Ingrese la cantidad de combos pollo a la brasa que va comprar: ");
+        int cantidadCombosBrasa = scanner.nextInt();
+
+        if (cantidadCombosBrasa <= 0) {
+            System.out.println("Cantidad no válida");
+            return;
+        }
+
+        double subtotal = preciosCombos[tipoComboBrasa] * cantidadCombosBrasa;
+        double subtotalIgv = subtotal * igv;
+        double total = subtotal + subtotalIgv;
+
+        subtotalProductos[0] += subtotal;
+        subtotalIgvProductos[0] += subtotalIgv;
+        totalPagarProductos[0] += total;
+
+        System.out.println("Su compra de combos de pollo a la brasa ha sido registrada.");
     }
 
-    public void quejas() {
-        System.out.println("----------------Ingrese su queja--------------");
-        String queja = scanner.nextLine();
-        System.out.println("-----------Su queja se validó satisfactoriamente--------------");
+    public void elegirComboBurger() {
+        double[] preciosCombos = {0.00, 19.00, 22.00, 27.00};
+
+        System.out.println("Combos disponibles de burger:");
+        System.out.println("1. Burger clasica + papas - S/ 19.00");
+        System.out.println("2. Burger suprema + papas - S/ 22.00");
+        System.out.println("3. Burger extrema + papas - S/ 27.00");
+        System.out.print("Seleccione su pedido (1/2/3): ");
+        int tipoComboburguer = scanner.nextInt();
+
+        if (tipoComboburguer < 1 || tipoComboburguer > 3) {
+            System.out.println("Opción de combo no válida");
+            return;
+        }
+
+        System.out.print("Ingrese la cantidad de combos burger que va comprar: ");
+        int cantidadCombosburguer = scanner.nextInt();
+
+        if (cantidadCombosburguer <= 0) {
+            System.out.println("Cantidad no válida");
+            return;
+        }
+
+        double subtotal = preciosCombos[tipoComboburguer] * cantidadCombosburguer;
+        double subtotalIgv = subtotal * igv;
+        double total = subtotal + subtotalIgv;
+
+        subtotalProductos[1] += subtotal;
+        subtotalIgvProductos[1] += subtotalIgv;
+        totalPagarProductos[1] += total;
+
+        System.out.println("Su compra de burguer ha sido registrada.");
+    }
+
+    public void elegirComboParrilla() {
+        double[] preciosCombos = {0.00, 35.00, 38.00, 44.00};
+
+        System.out.println("Combos disponibles de parrilla:");
+        System.out.println("1. Pechuga a la parrilla - S/ 35.00");
+        System.out.println("2. Churrasco a la parrilla - S/ 38.00");
+        System.out.println("3. Chuleta a la parrilla - S/ 44.00");
+        System.out.print("Seleccione su pedido (1/2/3): ");
+        int tipoComboParrilla = scanner.nextInt();
+
+        if (tipoComboParrilla < 1 || tipoComboParrilla > 3) {
+            System.out.println("Opción de parrilla no válida");
+            return;
+        }
+
+        System.out.print("Ingrese la cantidad de parrilla que va comprar: ");
+        int cantidadCombosParrilla = scanner.nextInt();
+
+        if (cantidadCombosParrilla <= 0) {
+            System.out.println("Cantidad no válida");
+            return;
+        }
+
+        double subtotal = preciosCombos[tipoComboParrilla] * cantidadCombosParrilla;
+        double subtotalIgv = subtotal * igv;
+        double total = subtotal + subtotalIgv;
+
+        subtotalProductos[2] += subtotal;
+        subtotalIgvProductos[2] += subtotalIgv;
+        totalPagarProductos[2] += total;
+
+        System.out.println("Su compra de parrilla ha sido registrada.");
+    }
+
+    public void elegirBebida() {
+        double[] preciosBebidas = {0.00, 14.00, 14.00, 6.50};
+
+        System.out.println("Bebidas disponibles:");
+        System.out.println("1. Gaseosa Inka Cola 1.5L - S/ 14.00");
+        System.out.println("2. Gaseosa Coca Cola 1.5L - S/ 14.00");
+        System.out.println("3. Agua San Luis 625 mL - S/ 6.50");
+        System.out.print("Seleccione su pedido (1/2/3): ");
+        int tipoBebida = scanner.nextInt();
+
+        if (tipoBebida < 1 || tipoBebida > 3) {
+            System.out.println("Opción de bebida no válida");
+            return;
+        }
+
+        System.out.print("Ingrese la cantidad de bebidas que va comprar: ");
+        int cantidadBebida = scanner.nextInt();
+
+        if (cantidadBebida <= 0) {
+            System.out.println("Cantidad no válida");
+            return;
+        }
+
+        double subtotal = preciosBebidas[tipoBebida] * cantidadBebida;
+        double subtotalIgv = subtotal * igv;
+        double total = subtotal + subtotalIgv;
+
+        subtotalProductos[3] += subtotal;
+        subtotalIgvProductos[3] += subtotalIgv;
+        totalPagarProductos[3] += total;
+
+        System.out.println("Su compra de bebidas ha sido registrada.");
+    }
+
+    public void contactar() {
+
+    }
+
+    public void pagarProductos() {
+        double totalDelSubtotal = 0.0;
+        double totalDeIgv = 0.0;
+        double total = 0.0;
+
+        for (int i = 0; i < subtotalProductos.length; i++) {
+            totalDelSubtotal += subtotalProductos[i];
+            totalDeIgv += subtotalIgvProductos[i];
+            total += totalPagarProductos[i];
+        }
 
         try {
-            File archivo = new File("queja_norkys.txt");
+            File archivo = new File("boleta_norkys.txt");
             FileWriter escritor = new FileWriter(archivo);
-            escritor.write("----Queja---------\n");
-            escritor.write("Queja:" + queja + "\n");
+
+            escritor.write("---- BOLETA DE VENTA -----\n");
+
+            for (int i = 0; i < subtotalProductos.length; i++) {
+                if (subtotalProductos[i] > 0) {
+                    escritor.write(String.format("Producto: %d - Subtotal: S/ %.2f - IGV: S/ %.2f - Total: S/ %.2f\n", i+1, subtotalProductos[i], subtotalIgvProductos[i], totalPagarProductos[i]));
+                }
+            }
+
+            escritor.write(String.format(" SUBTOTAL: S/ %.2f\n", totalDelSubtotal));
+            escritor.write(String.format(" IGV: S/ %.2f\n", totalDeIgv));
+            escritor.write(String.format(" TOTAL: S/ %.2f\n", total));
+
+            escritor.write("----------- Gracias por su compra! Vuelva pronto. ------------\n");
+
             escritor.close();
+            System.out.println("Boleta de venta generada correctamente.");
         } catch (IOException e) {
-            System.out.println("Error al exportar la queja.");
+            System.out.println("Error al generar la boleta de venta.");
             e.printStackTrace();
         }
     }
 
+
     public static void main(String[] args) {
-        System.out.println("¡Bienvenido a norkys!");
-        ProyectoNorkys proyectonorkys = new ProyectoNorkys();
-        System.out.println(proyectonorkys.iniciarSesion()); 
+        Proyectonorkys pollo = new Proyectonorkys();
+        pollo.niciarSesionExistente();
     }
 }
+
 
